@@ -15,21 +15,16 @@ int main(void) {
         init_field(field, &ball, &racket_left, &racket_right);
         // copy_matrix(field, field_next);
         init_curses();
-        int counter = 0;
         while (!game_over(score1, score2) && !quit) {
             int key = getch();
             controls(key, &speed, &racket_left, &racket_right, &quit);
-            if (counter >= speed) {
-                update_ball_dir(&ball, racket_left, racket_right);
-                move_ball(&ball, &score1, &score2);
-                counter = 0;
-            }
+            update_ball_dir(&ball, racket_left, racket_right);
+            move_ball(&ball, &score1, &score2);
             update_field(field, &ball, &racket_left, &racket_right, score1, score2);
             output(field);
             printw("\nThe current speed is %d\n", 11 - (speed / TIME_INTERVAL));
             refresh();
-            napms(TIME_INTERVAL);
-            counter += TIME_INTERVAL;
+            napms(speed);
             clear();
         }
         endwin();
