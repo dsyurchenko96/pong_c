@@ -19,8 +19,6 @@
 #define STARTING_SPEED (TIME_INTERVAL * 5)
 #define MAX_INTERVAL (TIME_INTERVAL * 10)
 
-#define CORNER_SHOT_Y 11
-
 typedef enum DirectionX {
     LEFT = -1,
     RIGHT = 1
@@ -53,17 +51,18 @@ void free_matrix(char **a, int rows);
 Racket create_racket(int x);
 Ball create_ball(void);
 
-void init_field(char **field, Ball *ball, Racket *racket_left, Racket *racket_right);
-void output(char **field);
+void init_field(char **field, const Ball *ball, const Racket *racket_left, const Racket *racket_right);
 void init_curses(void);
-int game_over(int score1, int score2);
-// void gameplay_loop(char **field, Ball *ball, Racket *racket_left, Racket *racket_right, int *score1, int *score2);
+void output(char **field, int speed);
+
 void controls(char key, int *speed, Racket *racket_left, Racket *racket_right, int *quit);
 void update_ball_dir(Ball *ball, Racket racket_left, Racket racket_right);
-void change_dir_on_collision(Ball *ball, Racket racket);
-// void copy_matrix(char **matrix_src, char **matrix_dest);
-void update_field(char **field, Ball *ball, Racket *racket_left, Racket *racket_right);
-void update_field_score(char **field, int score1, int score2);
-int move_ball(Ball *ball, int *score1, int *score2);
 void check_top_bottom(Ball *ball);
-int ball_hits_racket(Ball *ball, Racket racket);
+int ball_hits_racket(const Ball *ball, Racket racket);
+void change_dir_on_collision(Ball *ball, Racket racket);
+void move_ball(Ball *ball, int *score1, int *score2);
+
+void update_field(char **field, const Ball *ball, const Racket *racket_left, const Racket *racket_right);
+void update_field_score(char **field, int score1, int score2);
+
+int game_over(int score1, int score2);

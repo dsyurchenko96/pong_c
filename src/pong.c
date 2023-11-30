@@ -10,6 +10,7 @@ char **create_char_matrix(int rows, int cols) {
         ptrArray[i] = calloc(cols, sizeof(char));
         if (ptrArray[i] == NULL) {
             free_matrix(ptrArray, i);
+            ptrArray = NULL;
         }
     }
     return ptrArray;
@@ -22,7 +23,7 @@ void free_matrix(char **matrix, int rows) {
     free(matrix);
 }
 
-void init_field(char **field, Ball *ball, Racket *racket_left, Racket *racket_right) {
+void init_field(char **field, const Ball *ball, const Racket *racket_left, const Racket *racket_right) {
     for (int row = TOP; row < FIELD_HEIGHT; row++) {
         if (row == TOP || row == BOTTOM) {
             for (int col = LEFT_BOUND; col < FIELD_WIDTH; col++) {
@@ -42,7 +43,7 @@ void init_field(char **field, Ball *ball, Racket *racket_left, Racket *racket_ri
     }
 }
 
-void output(char **field) {
+void output(char **field, int speed) {
     for (int row = TOP; row < FIELD_HEIGHT; row++) {
         for (int col = LEFT_BOUND; col < FIELD_WIDTH; col++) {
             if (field[row][col] == 0) {
@@ -53,6 +54,10 @@ void output(char **field) {
         }
         printw("\n");
     }
+    printw(
+        "\nThe current speed is %d. Press '+' to increase it, '-' to decrease it."
+        "\nPlayer 1: 'a' - up, 'z' - down.\nPlayer 2: 'k' - up, 'm' - down.\n",
+        11 - (speed / TIME_INTERVAL));
 }
 
 void init_curses(void) {
@@ -85,9 +90,9 @@ void update_ball_dir(Ball *ball, Racket racket_left, Racket racket_right) {
     check_top_bottom(ball);
 }
 
-int ball_hits_racket(Ball *ball, Racket racket) {
-    return (ball->x + ball->cur_dir_x == racket.x || ball->x == racket.x) &&
-           ball->y >= racket.top && ball->y <= racket.bottom;
+int ball_hits_racket(const Ball *ball, Racket racket) {
+    return (ball->x + ball->cur_dir_x == racket.x || ball->x == racket.x) && ball->y >= racket.top &&
+           ball->y <= racket.bottom;
 }
 
 void change_dir_on_collision(Ball *ball, Racket racket) {
@@ -116,14 +121,12 @@ void check_top_bottom(Ball *ball) {
     }
 }
 
-int move_ball(Ball *ball, int *score1, int *score2) {
-    if (ball->y <= TOP || ball->y >= BOTTOM) {
-        return 1;
-    }
+void move_ball(Ball *ball, int *score1, int *score2) {
     ball->prev_x = ball->x;
     ball->prev_y = ball->y;
     ball->x += ball->cur_dir_x;
     ball->y += ball->cur_dir_y;
+
     if (ball->x == LEFT_BOUND) {
         ball->x = CENTER_X;
         (*score2)++;
@@ -131,10 +134,9 @@ int move_ball(Ball *ball, int *score1, int *score2) {
         ball->x = CENTER_X;
         (*score1)++;
     }
-    return 0;
 }
 
-void update_field(char **field, Ball *ball, Racket *racket_left, Racket *racket_right) {
+void update_field(char **field, const Ball *ball, const Racket *racket_left, const Racket *racket_right) {
     for (int y = TOP + 1; y < BOTTOM; y++) {
         field[y][racket_left->x] = ' ';
         field[y][racket_right->x] = ' ';
@@ -161,8 +163,6 @@ void update_field_score(char **field, int score1, int score2) {
 }
 
 void controls(char key, int *speed, Racket *racket_left, Racket *racket_right, int *quit) {
-    // racket_left->prev_y = racket_left->y;
-    // racket_right->prev_y = racket_right->y;
     switch (key) {
         case '-':
             if (*speed + TIME_INTERVAL <= MAX_INTERVAL) {
@@ -221,17 +221,18 @@ Racket create_racket(int x) {
     Racket racket;
     racket.x = x;
     racket.center = CENTER_Y;
-    racket.top = CENTER_Y - 1;
-    racket.bottom = CENTER_Y + 1;
+    racket.top = racket.center - 1;
+    racket.bottom = racket.center + 1;
     return racket;
 }
 
 Ball create_ball(void) {
     Ball ball;
     ball.x = CENTER_X;
-    ball.y = CORNER_SHOT_Y;
+    ball.y = CENTER_Y;
+    ball.prev_x = ball.x;
+    ball.prev_y = ball.y;
     ball.cur_dir_x = LEFT;
-    ball.cur_dir_y = DOWN;
+    ball.cur_dir_y = UP;
     return ball;
 }
-
