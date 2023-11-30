@@ -83,15 +83,29 @@ int game_over(int score1, int score2) {
 void update_ball_dir(Ball *ball, Racket racket_left, Racket racket_right) {
     ball->prev_x = ball->x;
     ball->prev_y = ball->y;
+    check_top_bottom(ball);
+    if (ball->x == racket_left.x + 1 && ball->y + ball->cur_dir_y >= racket_left.top &&
+        ball->y + ball->cur_dir_y <= racket_left.bottom) {
+        check_racket_collision(ball, racket_left);
+    } else if (ball->x == racket_right.x - 1 && ball->y + ball->cur_dir_y >= racket_right.top &&
+               ball->y + ball->cur_dir_y <= racket_right.bottom) {
+        check_racket_collision(ball, racket_right);
+    } else if ((ball->x == racket_left.x && ((ball->cur_dir_y == DOWN && ball->y == racket_left.top) ||
+            (ball->cur_dir_y == UP && ball->y == racket_left.bottom)))
+            || (ball->x == racket_right.x && ((ball->cur_dir_y == DOWN && ball->y == racket_right.top) ||
+            (ball->cur_dir_y == UP && ball->y == racket_right.bottom)))) {
+                ball->cur_dir_y *= -1;
+                ball->cur_dir_x *= -1;
+            }
+    check_top_bottom(ball);
+}
+
+void check_top_bottom(Ball *ball) {
     if (ball->y + ball->cur_dir_y == TOP || ball->y + ball->cur_dir_y == BOTTOM) {  // top/bottom
         ball->cur_dir_y *= -1;
     }
-    if (ball->x == racket_left.x + 1 && ball->y + ball->cur_dir_y >= racket_left.top && ball->y + ball->cur_dir_y <= racket_left.bottom) {
-        check_racket_collision(ball, racket_left);
-    } else if (ball->x == racket_right.x - 1 && ball->y + ball->cur_dir_y >= racket_right.top && ball->y + ball->cur_dir_y <= racket_right.bottom) {
-        check_racket_collision(ball, racket_right);
-    }
 }
+
 
 int move_ball(Ball *ball, int *score1, int *score2) {
     if (ball->y <= TOP || ball->y >= BOTTOM) {  // top/bottom
@@ -111,7 +125,7 @@ int move_ball(Ball *ball, int *score1, int *score2) {
 
 void check_racket_collision(Ball *ball, Racket racket) {
     if (ball->cur_dir_y == STRAIGHT) {  // straight line of movement
-        if (ball->y == racket.top) {  // top racket
+        if (ball->y == racket.top) {    // top racket
             ball->cur_dir_y = UP;
             // ball->cur_dir_x *= -1;
         } else if (ball->y == racket.center) {  // mid racket
@@ -137,7 +151,8 @@ void check_racket_collision(Ball *ball, Racket racket) {
         //     ball->cur_dir_x *= -1;
         // }
         ball->cur_dir_x *= -1;
-        if (ball->y + ball->cur_dir_y == TOP || ball->y + ball->cur_dir_y == BOTTOM) {  // top/bottom - corner check
+        if (ball->y + ball->cur_dir_y == TOP ||
+            ball->y + ball->cur_dir_y == BOTTOM) {  // top/bottom - corner check
             ball->cur_dir_y *= -1;
         }
     }

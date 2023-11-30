@@ -20,19 +20,25 @@ int main(void) {
             int key = getch();
             controls(key, &speed, &racket_left, &racket_right, &quit);
             // if (counter >= speed) {
-                update_ball_dir(&ball, racket_left, racket_right);
-                if (move_ball(&ball, &score1, &score2)) {
-                    free_matrix(field, FIELD_HEIGHT);
-                    endwin();
-                    printf("last ball.x is %d, ball.y is %d, dirx %d, diry %d", ball.x, ball.y, ball.cur_dir_x, ball.cur_dir_y);
-                    return 1;
-                }
-                // counter = 0;
+            update_ball_dir(&ball, racket_left, racket_right);
+            if (move_ball(&ball, &score1, &score2)) {
+                free_matrix(field, FIELD_HEIGHT);
+                endwin();
+                printf("last ball.x is %d, ball.y is %d, dirx %d, diry %d", ball.x, ball.y, ball.cur_dir_x,
+                       ball.cur_dir_y);
+                return 1;
+            }
+            // counter = 0;
             // }
             update_field(field, &ball, &racket_left, &racket_right, score1, score2);
             output(field);
             printw("\nThe current speed is %d\n", 11 - (speed / TIME_INTERVAL));
-            printw("\nRacket 1 tcb: %d %d %d, x %d.\nRacket 2 tcb: %d %d %d, x %d.\nlast ball.x is %d, ball.y is %d, dirx %d, diry %d\n", racket_left.top, racket_left.center, racket_left.bottom, racket_left.x, racket_right.top, racket_right.center, racket_right.bottom, racket_right.x, ball.x, ball.y, ball.cur_dir_x, ball.cur_dir_y);
+            printw(
+                "\nRacket 1 tcb: %d %d %d, x %d.\nRacket 2 tcb: %d %d %d, x %d.\nlast ball.x is %d, ball.y "
+                "is %d, dirx %d, diry %d\n",
+                racket_left.top, racket_left.center, racket_left.bottom, racket_left.x, racket_right.top,
+                racket_right.center, racket_right.bottom, racket_right.x, ball.x, ball.y, ball.cur_dir_x,
+                ball.cur_dir_y);
             refresh();
             napms(speed);
             // counter += TIME_INTERVAL;
