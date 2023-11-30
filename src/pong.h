@@ -15,8 +15,8 @@
 #define SCORE1_X (CENTER_X - BOUNDARY_OFFSET)
 #define SCORE2_X (CENTER_X + BOUNDARY_OFFSET - 1)
 
-#define TIME_INTERVAL 25
-#define STARTING_SPEED (TIME_INTERVAL * 3)
+#define TIME_INTERVAL 50
+#define STARTING_SPEED (TIME_INTERVAL * 5)
 #define MAX_INTERVAL (TIME_INTERVAL * 10)
 
 typedef enum DirectionX {
@@ -33,20 +33,24 @@ typedef enum DirectionY {
 typedef struct Ball {
     int x;
     int y;
-    DirectionX cur_dir_x;
-    DirectionY cur_dir_y;
     int prev_x;
     int prev_y;
+    DirectionX cur_dir_x;
+    DirectionY cur_dir_y;
 } Ball;
 
 typedef struct Racket {
     int x;
-    int y;
-    int prev_y;
+    int top;
+    int center;
+    int bottom;
 } Racket;
 
 char **create_char_matrix(int rows, int cols);
 void free_matrix(char **a, int rows);
+Racket create_racket(int x);
+Ball create_ball(void);
+
 void init_field(char **field, Ball *ball, Racket *racket_left, Racket *racket_right);
 void output(char **field);
 void init_curses(void);
@@ -57,4 +61,4 @@ void update_ball_dir(Ball *ball, Racket racket_left, Racket racket_right);
 void check_racket_collision(Ball *ball, Racket racket);
 // void copy_matrix(char **matrix_src, char **matrix_dest);
 void update_field(char **field, Ball *ball, Racket *racket_left, Racket *racket_right, int score1, int score2);
-void move_ball(Ball *ball, int *score1, int *score2);
+int move_ball(Ball *ball, int *score1, int *score2);

@@ -34,9 +34,6 @@ void init_field(char **field, Ball *ball, Racket *racket_left, Racket *racket_ri
             field[row][RIGHT_BOUND] = '|';
         }
     }
-    ball->x = CENTER_X, ball->y = CENTER_Y, ball->cur_dir_x = LEFT, ball->cur_dir_y = UP;
-    racket_left->x = LEFT_BOUND + BOUNDARY_OFFSET, racket_left->y = CENTER_Y;
-    racket_right->x = RIGHT_BOUND - BOUNDARY_OFFSET, racket_right->y = CENTER_Y;
 
     field[ball->y][ball->x] = 'O';
     for (int y = CENTER_Y - 1; y <= CENTER_Y + 1; y++) {
@@ -68,6 +65,7 @@ void init_curses(void) {
     cbreak();
     noecho();
     nodelay(stdscr, TRUE);
+    curs_set(FALSE);
 }
 
 int game_over(int score1, int score2) {
@@ -85,20 +83,20 @@ int game_over(int score1, int score2) {
 void update_ball_dir(Ball *ball, Racket racket_left, Racket racket_right) {
     ball->prev_x = ball->x;
     ball->prev_y = ball->y;
-    if (ball->y == TOP + 1 || ball->y == BOTTOM - 1) {  // top/bottom
+    if (ball->y + ball->cur_dir_y == TOP || ball->y + ball->cur_dir_y == BOTTOM) {  // top/bottom
         ball->cur_dir_y *= -1;
     }
-    if (ball->x - 1 == racket_left.x &&
-        (ball->y + ball->cur_dir_y >= racket_left.y - 1 && ball->y <= racket_left.y + 1)) {
+    if (ball->x == racket_left.x + 1 && ball->y + ball->cur_dir_y >= racket_left.top && ball->y + ball->cur_dir_y <= racket_left.bottom) {
         check_racket_collision(ball, racket_left);
-    } else if (ball->x + 1 == racket_right.x &&
-               (ball->y + ball->cur_dir_y >= racket_right.y - 1 && ball->y <= racket_right.y + 1)) {
+    } else if (ball->x == racket_right.x - 1 && ball->y + ball->cur_dir_y >= racket_right.top && ball->y + ball->cur_dir_y <= racket_right.bottom) {
         check_racket_collision(ball, racket_right);
     }
-    
 }
 
-void move_ball(Ball *ball, int *score1, int *score2) {
+int move_ball(Ball *ball, int *score1, int *score2) {
+    if (ball->y <= TOP || ball->y >= BOTTOM) {  // top/bottom
+        return 1;
+    }
     ball->x += ball->cur_dir_x;
     ball->y += ball->cur_dir_y;
     if (ball->x == LEFT_BOUND) {  // leftbound
@@ -108,24 +106,28 @@ void move_ball(Ball *ball, int *score1, int *score2) {
         ball->x = CENTER_X;
         (*score1)++;
     }
+    return 0;
 }
 
 void check_racket_collision(Ball *ball, Racket racket) {
     if (ball->cur_dir_y == STRAIGHT) {  // straight line of movement
-        if (ball->y == racket.y - 1) {  // top racket
+        if (ball->y == racket.top) {  // top racket
             ball->cur_dir_y = UP;
-        } else if (ball->y == racket.y) {  // mid racket
+            // ball->cur_dir_x *= -1;
+        } else if (ball->y == racket.center) {  // mid racket
             ball->cur_dir_y = STRAIGHT;
-        } else if (ball->y == racket.y + 1) {  // bottom racket
+            // ball->cur_dir_x *= -1;
+        } else if (ball->y == racket.bottom) {  // bottom racket
             ball->cur_dir_y = DOWN;
+            // ball->cur_dir_x *= -1;
         }
         ball->cur_dir_x *= -1;
     } else {  // diagonal movement
-        if ((ball->cur_dir_y == DOWN && ball->y + ball->cur_dir_y == racket.y - 1) ||
-            (ball->cur_dir_y == UP && ball->y + ball->cur_dir_y == racket.y + 1)) {  // closest hit
+        if ((ball->cur_dir_y == DOWN && ball->y == racket.top) ||
+            (ball->cur_dir_y == UP && ball->y == racket.bottom)) {  // closest hit
             ball->cur_dir_y *= -1;
             // ball->cur_dir_x *= -1;
-        } else if (ball->y == racket.y) {  // center hit
+        } else if (ball->y == racket.center) {  // center hit
             ball->cur_dir_y = STRAIGHT;
             // ball->cur_dir_x *= -1;
         }
@@ -135,7 +137,7 @@ void check_racket_collision(Ball *ball, Racket racket) {
         //     ball->cur_dir_x *= -1;
         // }
         ball->cur_dir_x *= -1;
-        if (ball->y == TOP + 1 || ball->y == BOTTOM - 1) {  // top/bottom - corner check
+        if (ball->y + ball->cur_dir_y == TOP || ball->y + ball->cur_dir_y == BOTTOM) {  // top/bottom - corner check
             ball->cur_dir_y *= -1;
         }
     }
@@ -153,10 +155,10 @@ void update_field(char **field, Ball *ball, Racket *racket_left, Racket *racket_
         field[ball->prev_y][ball->prev_x] = ' ';
     }
     field[ball->y][ball->x] = 'O';
-    for (int y = racket_left->y - 1; y <= racket_left->y + 1; y++) {
+    for (int y = racket_left->top; y <= racket_left->bottom; y++) {
         field[y][racket_left->x] = '|';
     }
-    for (int y = racket_right->y - 1; y <= racket_right->y + 1; y++) {
+    for (int y = racket_right->top; y <= racket_right->bottom; y++) {
         field[y][racket_right->x] = '|';
     }
 
@@ -167,8 +169,8 @@ void update_field(char **field, Ball *ball, Racket *racket_left, Racket *racket_
 }
 
 void controls(char key, int *speed, Racket *racket_left, Racket *racket_right, int *quit) {
-    racket_left->prev_y = racket_left->y;
-    racket_right->prev_y = racket_right->y;
+    // racket_left->prev_y = racket_left->y;
+    // racket_right->prev_y = racket_right->y;
     switch (key) {
         case '-':
             if (*speed + TIME_INTERVAL <= MAX_INTERVAL) {
@@ -183,26 +185,34 @@ void controls(char key, int *speed, Racket *racket_left, Racket *racket_right, i
             break;
 
         case 'a':
-            if (racket_left->y != TOP + 2) {
-                racket_left->y--;
+            if (racket_left->top != TOP + 1) {
+                racket_left->top--;
+                racket_left->center--;
+                racket_left->bottom--;
             }
             break;
 
         case 'z':
-            if (racket_left->y != BOTTOM - 2) {
-                racket_left->y++;
+            if (racket_left->bottom != BOTTOM - 1) {
+                racket_left->top++;
+                racket_left->center++;
+                racket_left->bottom++;
             }
             break;
 
         case 'k':
-            if (racket_right->y != TOP + 2) {
-                racket_right->y--;
+            if (racket_right->top != TOP + 1) {
+                racket_right->top--;
+                racket_right->center--;
+                racket_right->bottom--;
             }
             break;
 
         case 'm':
-            if (racket_right->y != BOTTOM - 2) {
-                racket_right->y++;
+            if (racket_right->bottom != BOTTOM - 1) {
+                racket_right->top++;
+                racket_right->center++;
+                racket_right->bottom++;
             }
             break;
 
@@ -215,10 +225,20 @@ void controls(char key, int *speed, Racket *racket_left, Racket *racket_right, i
     flushinp();
 }
 
-// void copy_matrix(char **matrix_src, char **matrix_dest) {
-//     for (int row = 0; row < FIELD_HEIGHT; row++) {
-//         for (int col = 0; col < FIELD_WIDTH; col++) {
-//             matrix_dest[row][col] = matrix_src[row][col];
-//         }
-//     }
-// }
+Racket create_racket(int x) {
+    Racket racket;
+    racket.x = x;
+    racket.center = CENTER_Y;
+    racket.top = CENTER_Y - 1;
+    racket.bottom = CENTER_Y + 1;
+    return racket;
+}
+
+Ball create_ball(void) {
+    Ball ball;
+    ball.x = CENTER_X;
+    ball.y = CENTER_Y;
+    ball.cur_dir_x = LEFT;
+    ball.cur_dir_y = DOWN;
+    return ball;
+}
