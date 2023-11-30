@@ -13,6 +13,7 @@ int main(void) {
         int speed = STARTING_SPEED;
 
         init_field(field, &ball, &racket_left, &racket_right);
+        update_field_score(field, score1, score2);
         // copy_matrix(field, field_next);
         init_curses();
         // int counter = 0;
@@ -30,7 +31,8 @@ int main(void) {
             }
             // counter = 0;
             // }
-            update_field(field, &ball, &racket_left, &racket_right, score1, score2);
+            update_field(field, &ball, &racket_left, &racket_right);
+            update_field_score(field, score1, score2);
             output(field);
             printw("\nThe current speed is %d\n", 11 - (speed / TIME_INTERVAL));
             printw(

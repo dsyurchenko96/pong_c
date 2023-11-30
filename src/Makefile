@@ -31,4 +31,4 @@ cpp:
 clang:
 	clang-format -i *.c
 
-.PHONY: all clean rebuild cpp build clang
+.PHONY: all clean rebuild cpp clang start restart
