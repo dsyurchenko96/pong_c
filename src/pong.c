@@ -23,6 +23,26 @@ void free_matrix(char **matrix, int rows) {
     free(matrix);
 }
 
+Racket create_racket(int x) {
+    Racket racket;
+    racket.x = x;
+    racket.center = CENTER_Y;
+    racket.top = racket.center - 1;
+    racket.bottom = racket.center + 1;
+    return racket;
+}
+
+Ball create_ball(void) {
+    Ball ball;
+    ball.x = CENTER_X;
+    ball.y = CENTER_Y;
+    ball.prev_x = ball.x;
+    ball.prev_y = ball.y;
+    ball.cur_dir_x = LEFT;
+    ball.cur_dir_y = UP;
+    return ball;
+}
+
 void init_field(char **field, const Ball *ball, const Racket *racket_left, const Racket *racket_right) {
     for (int row = TOP; row < FIELD_HEIGHT; row++) {
         if (row == TOP || row == BOTTOM) {
@@ -57,7 +77,7 @@ void output(char **field, int speed) {
     printw(
         "\nThe current speed is %d. Press '+' to increase it, '-' to decrease it."
         "\nPlayer 1: 'a' - up, 'z' - down.\nPlayer 2: 'k' - up, 'm' - down.\n",
-        11 - (speed / TIME_INTERVAL));
+        10 - (speed / TIME_INTERVAL) + 1);
 }
 
 void init_curses(void) {
@@ -66,18 +86,6 @@ void init_curses(void) {
     noecho();
     nodelay(stdscr, TRUE);
     curs_set(FALSE);
-}
-
-int game_over(int score1, int score2) {
-    int exit_status = 0;
-    if (score1 == GAMEOVER_SCORE) {
-        printw("Player 1 wins!");
-        exit_status = 1;
-    } else if (score2 == GAMEOVER_SCORE) {
-        printw("Player 2 wins!");
-        exit_status = 1;
-    }
-    return exit_status;
 }
 
 void update_ball_dir(Ball *ball, Racket racket_left, Racket racket_right) {
@@ -217,22 +225,18 @@ void controls(char key, int *speed, Racket *racket_left, Racket *racket_right, i
     flushinp();
 }
 
-Racket create_racket(int x) {
-    Racket racket;
-    racket.x = x;
-    racket.center = CENTER_Y;
-    racket.top = racket.center - 1;
-    racket.bottom = racket.center + 1;
-    return racket;
-}
-
-Ball create_ball(void) {
-    Ball ball;
-    ball.x = CENTER_X;
-    ball.y = CENTER_Y;
-    ball.prev_x = ball.x;
-    ball.prev_y = ball.y;
-    ball.cur_dir_x = LEFT;
-    ball.cur_dir_y = UP;
-    return ball;
+int game_over(int score1, int score2) {
+    int exit_status = 0;
+    if (score1 == GAMEOVER_SCORE) {
+        printw("\nPlayer 1 wins!\n");
+        refresh();
+        napms(MAX_INTERVAL * 10);
+        exit_status = 1;
+    } else if (score2 == GAMEOVER_SCORE) {
+        printw("\nPlayer 2 wins!\n");
+        refresh();
+        napms(MAX_INTERVAL * 10);
+        exit_status = 1;
+    }
+    return exit_status;
 }
