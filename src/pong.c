@@ -3,6 +3,7 @@
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 char **create_char_matrix(int rows, int cols) {
     char **ptrArray = calloc(rows, sizeof(char *));
@@ -33,13 +34,14 @@ Racket create_racket(int x) {
 }
 
 Ball create_ball(void) {
+    srandom(time(NULL));
     Ball ball;
     ball.x = CENTER_X;
-    ball.y = CENTER_Y;
+    ball.y = (random() / ((double) RAND_MAX + 1)) * (BOTTOM - 1) + 1;
     ball.prev_x = ball.x;
     ball.prev_y = ball.y;
-    ball.cur_dir_x = LEFT;
-    ball.cur_dir_y = UP;
+    ball.cur_dir_x = ((random() / ((double) RAND_MAX + 1)) == 0) ? -1 : 1;
+    ball.cur_dir_y = ((random() / ((double) RAND_MAX + 1)) == 0) ? -1 : 1;
     return ball;
 }
 
@@ -226,17 +228,17 @@ void controls(char key, int *speed, Racket *racket_left, Racket *racket_right, i
 }
 
 int game_over(int score1, int score2) {
-    int exit_status = 0;
+    int is_game_over = 0;
     if (score1 == GAMEOVER_SCORE) {
         printw("\nPlayer 1 wins!\n");
         refresh();
         napms(MAX_INTERVAL * 10);
-        exit_status = 1;
+        is_game_over = 1;
     } else if (score2 == GAMEOVER_SCORE) {
         printw("\nPlayer 2 wins!\n");
         refresh();
         napms(MAX_INTERVAL * 10);
-        exit_status = 1;
+        is_game_over = 1;
     }
-    return exit_status;
+    return is_game_over;
 }
