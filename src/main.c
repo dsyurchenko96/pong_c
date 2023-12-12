@@ -41,20 +41,3 @@ int main(void) {
     free_matrix(field, FIELD_HEIGHT);
     return exit_status;
 }
-
-// char **field_next = create_char_matrix(FIELD_HEIGHT, FIELD_WIDTH);
-//         if (field_next != NULL) {
-
-// printw(
-//     "\nRacket 1 tcb: %d %d %d, x %d.\nRacket 2 tcb: %d %d %d, x %d.\nlast ball.x is %d, ball.y "
-//     "is %d, dirx %d, diry %d\n",
-//     racket_left.top, racket_left.center, racket_left.bottom, racket_left.x, racket_right.top,
-//     racket_right.center, racket_right.bottom, racket_right.x, ball.x, ball.y, ball.cur_dir_x,
-//     ball.cur_dir_y);
-
-// if ball not move:
-// free_matrix(field, FIELD_HEIGHT);
-// endwin();
-// printf("last ball.x is %d, ball.y is %d, dirx %d, diry %d", ball.x, ball.y, ball.cur_dir_x,
-//        ball.cur_dir_y);
-// return 1;
